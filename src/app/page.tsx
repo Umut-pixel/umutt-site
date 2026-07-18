@@ -1,17 +1,23 @@
+import { BlogCard } from "@/components/blog-card";
 import { HackathonCard } from "@/components/hackathon-card";
 import BlurFade from "@/components/magicui/blur-fade";
 import BlurFadeText from "@/components/magicui/blur-fade-text";
 import { ProjectCard } from "@/components/project-card";
 import { ResumeCard } from "@/components/resume-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { getBlogPosts } from "@/data/blog";
 import { DATA } from "@/data/resume";
+import Image from "next/image";
 import Link from "next/link";
 import Markdown from "react-markdown";
 
 const BLUR_FADE_DELAY = 0.04;
 
-export default function Page() {
+export default async function Page() {
+  const posts = (await getBlogPosts()).slice(0, 2);
+
   return (
     <main className="flex flex-col min-h-[100dvh] space-y-10">
       <section id="hero">
@@ -30,9 +36,17 @@ export default function Page() {
                 text={DATA.description}
               />
             </div>
-            <BlurFade delay={BLUR_FADE_DELAY}>
-              <Avatar className="size-28 border">
-                <AvatarImage alt={DATA.name} src={DATA.avatarUrl} />
+            <BlurFade delay={BLUR_FADE_DELAY} duration={0.35} yOffset={4} blur="4px">
+              <Avatar className="relative size-28 border">
+                <Image
+                  src={DATA.avatarUrl}
+                  alt={DATA.name}
+                  width={112}
+                  height={112}
+                  priority
+                  quality={85}
+                  className="aspect-square h-full w-full object-cover"
+                />
                 <AvatarFallback>{DATA.initials}</AvatarFallback>
               </Avatar>
             </BlurFade>
@@ -152,9 +166,55 @@ export default function Page() {
           </div>
         </div>
       </section>
+      <section id="blog">
+        <div className="space-y-10 w-full py-12">
+          <BlurFade delay={BLUR_FADE_DELAY * 13} duration={0.35} yOffset={4} blur="4px">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+              <div className="space-y-2">
+                <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
+                  Blog
+                </div>
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
+                  Latest writing
+                </h2>
+                <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+                  A few recent notes on building products, shipping software,
+                  and the things I&apos;m learning along the way.
+                </p>
+              </div>
+            </div>
+          </BlurFade>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-[800px] mx-auto w-full">
+            {posts.map((post, id) => (
+              <BlurFade
+                key={post.slug}
+                delay={BLUR_FADE_DELAY * 13.5 + id * 0.03}
+                duration={0.35}
+                yOffset={4}
+                blur="4px"
+              >
+                <BlogCard
+                  title={post.metadata.title}
+                  date={post.metadata.publishedAt}
+                  href={`/blog/${post.slug}`}
+                  image={post.metadata.image}
+                  priority
+                />
+              </BlurFade>
+            ))}
+          </div>
+          <BlurFade delay={BLUR_FADE_DELAY * 14} duration={0.3} yOffset={2} blur="3px">
+            <div className="flex justify-center">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/blog">View all posts</Link>
+              </Button>
+            </div>
+          </BlurFade>
+        </div>
+      </section>
       <section id="hackathons">
         <div className="space-y-12 w-full py-12">
-          <BlurFade delay={BLUR_FADE_DELAY * 13}>
+          <BlurFade delay={BLUR_FADE_DELAY * 15}>
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
@@ -164,7 +224,7 @@ export default function Page() {
                   I like building things
                 </h2>
                 <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  During my time in university, I attended {" "}
+                  During my time in university, I attended{" "}
                   {DATA.hackathons.length}+ hackathons. People from around the
                   country would come together and build incredible things in 2-3
                   days. It was eye-opening to see the endless possibilities
@@ -174,12 +234,12 @@ export default function Page() {
               </div>
             </div>
           </BlurFade>
-          <BlurFade delay={BLUR_FADE_DELAY * 14}>
+          <BlurFade delay={BLUR_FADE_DELAY * 16}>
             <ul className="mb-4 ml-4 divide-y divide-dashed border-l">
               {DATA.hackathons.map((project, id) => (
                 <BlurFade
                   key={project.title + project.dates}
-                  delay={BLUR_FADE_DELAY * 15 + id * 0.05}
+                  delay={BLUR_FADE_DELAY * 17 + id * 0.05}
                 >
                   <HackathonCard
                     title={project.title}
@@ -197,7 +257,7 @@ export default function Page() {
       </section>
       <section id="contact">
         <div className="grid items-center justify-center gap-4 px-4 text-center md:px-6 w-full py-12">
-          <BlurFade delay={BLUR_FADE_DELAY * 16}>
+          <BlurFade delay={BLUR_FADE_DELAY * 18}>
             <div className="space-y-3">
               <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
                 Contact

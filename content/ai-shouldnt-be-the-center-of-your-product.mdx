@@ -1,0 +1,24 @@
+---
+title: "AI Shouldn’t Be the Center of Your Product"
+publishedAt: "2026-07-18"
+summary: "Putting the problem and the core data at the center matters more than using AI as a branding hook."
+image: "/blog/ai-shouldnt-be-the-center-v3.png"
+company: "Company"
+companyUrl: "https://celixion.com"
+---
+
+The "Hey Claude, build me the Internet, make no mistakes!" approach has stopped being just a joke — it has quietly rewritten how most products are marketed. Almost every product launch today opens with "AI-powered," while the actual problem it solves takes a back seat. The core issue with AI-centric products isn't the AI itself; it's that the AI gets marketed harder than the problem it solves. Putting the problem at the center matters more than using AI as a branding hook.
+
+After building AI-centric workflows, I noticed something. When you put the problem and the core data at the center of the product, and treat AI tools as just that — tools, not the central system — the result is more optimized and more robust.
+
+We learned this building Celixion, our new venture. The problem we set out to solve was operational data chaos in dry cargo shipping, the mess that brokers and charterers deal with daily, using AI. But we approached it wrong at first: we ran every operational email through the AI directly, which burned tokens and produced messy output. We hadn't separated data ingestion from reasoning — the AI was doing both at once, absorbing raw email text and trying to extract structure from it in the same step.
+
+Once we caught the mistake, we rebuilt the approach from the ground up: data-first. We parse and normalize the data through a lightweight, rule-based layer first; extracting structured fields like cargo type, origin, and destination, and only then hand AI the clean, normalized record for validation and quality improvement, not raw text. The hardest part wasn't the parsing, the regex, or the algorithms — it was getting data normalization right so the AI could work with the cleanest possible input.
+
+The numbers back this up. Between May and July 2026, our average token usage per request dropped **87.6%**, from 8,687 tokens to 1,080, while the volume of requests we processed grew **12x**, from 3,311 to 40,103. Same workload, far less waste per unit, because the AI was finally working on structured data instead of raw noise.
+
+Putting the problem and the core data at the center is like building a house on solid foundations before adding the AI layer on top. The cleaner the source you hand AI, the closer the output gets to optimal.
+
+Using AI in your product or workflow isn't the problem — AI isn't some boogeyman! It's already changed our lives and it will keep changing them. The real problem is using it blindly and turning your workflow's output into something incomprehensible.
+
+Products solve problems. AI is a tool inside that process, not the process itself.

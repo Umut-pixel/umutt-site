@@ -1,0 +1,118 @@
+---
+title: "Celixion"
+summary: "Denizcilik ve kuru yük brokerları için bir operasyon merkezi — bir teklif e-postası düştüğü anda Celixion onu ayrıştırıyor, gemiyi ya da kargoyu kaydediyor ve en uygun eşleşmeyi öne çıkarıyor."
+dates: "Eylül 2025"
+status: "Devam ediyor"
+image: "/blog/building-celixion-v2.png"
+technologies:
+  - "Next.js"
+  - "TypeScript"
+  - "PostgreSQL + Supabase"
+  - "Prisma"
+  - "Mapbox"
+  - "Recharts"
+  - "TailwindCSS"
+  - "Shadcn UI"
+  - "Magic UI"
+  - "n8n"
+  - "Python"
+  - "Cloudflare Workers"
+website: "https://celixion.com"
+chart:
+  type: metrics
+  after: "Etki"
+  title: "Üretimde"
+  description: "Celixion üretim veritabanından canlı rakamlar, 30 Nisan – 4 Eylül 2026."
+  metrics:
+    - label: "İşlenen e-posta"
+      value: 23453
+    - label: "Günlük e-posta"
+      value: 185
+    - label: "Takip edilen gemi"
+      value: 2450
+    - label: "Kargo teklifi"
+      value: 5339
+---
+
+## Problem
+
+Denizcilik ve kuru yük brokerliği hâlâ e-posta ve Excel üzerinden yürüyor. Bir brokerın günü, onlarca
+teklif e-postasını tek tek açmakla, gemi ya da kargo bilgisini elle çıkarmakla, bunları ayrı tablolarla
+karşılaştırmakla ve eşleşmeyi bulmaya çalışmakla geçiyor. Gemiler, kargolar ve aralarındaki bağlantılar
+e-posta zincirlerinin içinde kayboluyor.
+
+Bu yavaş bir yöntem ve yoğun bir günde kaybettiren türden bir yavaşlık. Bilgi zaten var. Ondan bir cevap
+çıkarmak bir öğleden sonra alıyor.
+
+## Celixion ne yapıyor
+
+Celixion süreci tersine çeviriyor. Bir teklif e-postası geldiği anda sistem onu okuyor, gemi ya da kargo
+kaydını oluşturuyor ve en olası eşleşmeyi brokerın önüne koyuyor — artık kimse gelen kutusuyla hesap
+tablosu arasında gidip gelmiyor.
+
+Her şey tek bir kontrol merkezinden yürüyor:
+
+- **Canlı filo takibi** — gemiler harita üzerinde gerçek zamanlı izleniyor.
+- **Akıllı eşleştirme** — gelen kargo ve gemi ilanları otomatik karşılaştırılıyor, en uygun adaylar öne
+  çıkarılıyor.
+- **Piyasa istihbaratı** — liman yoğunluğu, piyasa hareketleri ve uyarılar tek ekranda.
+- **Operasyon takibi** — devam eden işler, teklifler ve geçmiş kayıtlar tek yerden yönetiliyor.
+
+Brokerın muhakemesinin yerini almıyor. Ondan önce gelen yirmi dakikalık arama işini ortadan kaldırıyor.
+
+## Nasıl çalışıyor
+
+**Ayrıştırma hatları.** Ham e-postalar alınıp aday alanlara bölünüyor — gemi adları, tarihler, tonaj,
+limanlar, kargo tipleri. Girdi gerçekten dağınık olduğu için ayrıştırma tek bir çıkarım adımı değil,
+aşamalı bir hat olarak ele alınıyor.
+
+**Yapay zekâ destekli sınıflandırma.** Dil modelleri katı kurallara direnen kısmı üstleniyor: bir mesajın
+gerçekte ne olduğuna karar vermek ve gevşek ifadeleri veri modeline oturtmak. Promptlar kod tabanının
+parçası ve diğer her bileşen gibi üzerinde yineleniyor.
+
+**Supabase tabanlı veri modeli.** Gemiler, kargolar ve eşleşmeler Supabase'in arkasındaki PostgreSQL'de,
+üstünde Prisma ile duruyor. Geri kalan her şeyin okuduğu katman bu — sistemin bütün amacı bu verinin
+nihayet sorgulanabilecek kadar yapılandırılmış olması.
+
+**Otomasyon ve uç işleri.** n8n, postayı okuyan, limanları ve rotaları çözen ve eşleştirmeyi yürüten arka
+plan akışlarını orkestre ediyor. Python veri işlemeyi, Cloudflare Workers ise uç katmanı üstleniyor.
+
+## Etki
+
+Değişim günlük döngüde görünüyor. Eskiden sürekli gelen kutusu taraması ve tablolar arası manuel
+karşılaştırma olan iş, artık posta düştüğü anda önünüze gelen bir eşleşme.
+
+Posta hattı Nisan 2026 sonunda devreye girdiğinden beri 23.453 e-posta işledi — günde yaklaşık 185 —
+ve bunları 2.450 gemi kaydı ile 5.339 kargo teklifine dönüştürdü; otomatik eşleştirmede %92 doğrulukla.
+
+## Teknoloji
+
+| Katman | Teknoloji |
+| --- | --- |
+| Arayüz | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui, Magic UI |
+| Veri | Supabase (Postgres + Auth), Prisma |
+| Harita ve takip | Mapbox / Leaflet — canlı filo görselleştirmesi |
+| Otomasyon | n8n, Python, Cloudflare Workers — posta alımı, liman ve rota çözümü, eşleştirme |
+| Raporlama | Recharts — piyasa ve performans grafikleri |
+| Bildirimler | Otomatik e-posta gönderimi ve teklif takibi |
+
+Teknoloji seçimi yenilikten çok hızlı yineleme için yapıldı. Buradaki her parça, ürün hâlâ şeklini
+ararken hızla değiştirebileceğim bir şey — ve en zor problemi girdisinin öngörülemezliği olan bir sistem
+için bu, en ilginç aracı seçmekten daha önemli.
+
+## Kimler için
+
+Denizcilik brokerları ve kargo şirketleri — her gün çok sayıda gemi ve yük teklifini takip etmesi gereken
+ekipler.
+
+## Bugün nerede
+
+2025'in sonunda Celixion'u tam zamanlı geliştirmek için sözleşmeli işlerden çekildim; Yazılım Geliştirici
+ve Kurucu olarak çalışıyorum. Geliştirme Temmuz 2025'te başladı ve platform gerçek broker ekipleri
+tarafından günlük olarak aktif kullanımda.
+
+Teknik detaylar ve yol boyunca karşılaşılan problemler için
+[Celixion'u Kurmak](/tr/blog/building-celixion) yazısına, yapay zekâ katmanının neden bilinçli olarak
+ürünün merkezinde olmadığına dair ise
+[Yapay Zekâ Ürününüzün Merkezinde Olmamalı](/tr/blog/ai-shouldnt-be-the-center-of-your-product)
+yazısına bakabilirsiniz.

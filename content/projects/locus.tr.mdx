@@ -1,0 +1,107 @@
+---
+title: "Locus"
+summary: "Petshop müşteri haritası ve risk analizi — Panorama ERP'den gelen parçalı raporları, teslimat ve ödeme riskine göre puanlanmış tek bir haritada birleştiriyor."
+dates: "Temmuz 2026"
+status: "Devam ediyor"
+image: "/locus-mark.png"
+technologies:
+  - "Next.js"
+  - "Mapbox GL JS"
+  - "Supabase"
+  - "PostgreSQL"
+  - "Python"
+  - "n8n"
+  - "Vercel"
+website: "https://locus-two-delta.vercel.app"
+chart:
+  type: bars
+  after: "Çözüm"
+  title: "Teslimat riski dağılımı"
+  description: "Haritadaki her müşteri, son sevkiyattan bu yana geçen süreye göre SQL view'ında hesaplanan dört banttan birine düşüyor. Rakamlar canlı üretim veritabanından."
+  unit: "haritalanmış müşteri"
+  rows:
+    - label: "Sağlıklı"
+      value: 226
+      note: "Beklenen döngü içinde sevkiyat yapılmış"
+    - label: "İzlenmeli"
+      value: 62
+      note: "Alışılmış ritmin gerisine düşmüş"
+    - label: "Riskli"
+      value: 192
+      note: "Beklenen teslimat penceresini fazlasıyla aşmış"
+    - label: "Hiç teslimat yok"
+      value: 833
+      note: "Kayıtlarda var, ama hiçbir sevkiyat görünmüyor"
+---
+
+## Problem
+
+Peritas Pet Food, Ege bölgesinde çalışan bir petshop / veteriner distribütörü. Tüm müşteri, sevkiyat ve
+borç verisi Panorama (Univera) ERP sisteminde tutuluyor, ama bu veri saha ve satış ekibi için
+kullanılabilir değildi: coğrafi dağılımı görmek, teslimatı geciken ya da ödemesi biriken müşterileri
+tespit etmek için her seferinde Excel export alıp elle pivot tablo / VLOOKUP yapmak gerekiyordu.
+
+ERP'nin kendi raporlama katmanı, "bu müşteriye 90 gündür teslimat yapılmadı" ya da "bu müşterinin 56+
+gün gecikmiş şu kadar borcu var" gibi soruları tek bakışta cevaplamıyordu.
+
+## Çözüm
+
+Locus, Panorama'dan gelen 5 farklı Excel rapor tipini — `MüşteriListesi`, `RutTanımListesi`,
+`SevkiyatRaporuKüp`, `StYaşlandırma` ve `BelgeDetayRaporu` — alıp temizleyen, birleştiren ve harita
+üzerinde risk renkleriyle görselleştiren bir web uygulaması. Panorama'nın yerini almıyor; onun üzerine,
+saha ekibinin günlük kullanacağı bir karar destek katmanı kuruyor.
+
+- **Harita.** Veritabanında 1.426 müşteri, bunların 1.313'ü harita üzerinde — konuma göre kümelenmiş
+  (clustering), risk durumuna göre renklendirilmiş; rota doğrulama için Mapbox Directions API
+  entegrasyonu.
+- **İki ayrı risk ekseni.** *Teslimat riski* son sevkiyattan bu yana geçen süreye göre hesaplanıyor
+  (sağlıklı / izlenmeli / riskli / hiç teslimat yok). *Ödeme riski* borç yaşlandırma bantlarından
+  geliyor — 56+ gün gecikmiş tutar, şu an 120 müşteriyi işaretliyor. İkisi bilinçli olarak birbirine
+  karıştırılmıyor.
+- **Raporlama sayfası.** Segment / risk / ciro / açık bakiye kırılımlı, dışa aktarılabilir müşteri
+  tablosu.
+- **Veri girişi.** Panorama'dan manuel Excel export → uygulama içi yükleme akışı → Supabase'e parse ve
+  upsert; ayrıca kısmi bir tarayıcı-otomasyonu (n8n) senkron katmanı.
+
+## Mühendislik açısından öne çıkan kararlar
+
+**Risk hesaplaması veritabanı katmanında, tek yerde.** Tüm risk mantığı bir SQL view'da
+(`musteriler_harita`) hesaplanıyor; frontend hiçbir zaman bu mantığı kopyalayıp yeniden hesaplamıyor.
+Bu, "arayüzde gösterilen rakam ile gerçek rakam tutmuyor" sınıfı hataları yapısal olarak imkânsız
+kılıyor.
+
+**Kaynak verinin gerçek şekliyle yüzleşme.** ERP export'u kendi başına güvenilir değildi — KDV
+dahil/hariç ciro karışıklığı, yanıltıcı kolon isimleri (`KoordinatX` aslında enlem), %77 dolu ilçe
+alanı, araç ve plaka alanlarının sahte/sabit değer olması gibi birçok veri tuhaflığı tek tek tespit
+edilip ETL / view katmanında belgelenerek çözüldü — arayüzde sahte kesinlik üretmek yerine.
+
+**Geocode stratejisi bilinçli olarak sınırlı tutuldu.** Türkiye'de sokak seviyesi geocode
+hizmetlerinin (Nominatim) pratikte %0 isabetli çıkması üzerine, sadece mahalle merkezi hassasiyeti ve
+sahadan gelen gerçek GPS koordinatları kullanılıyor. İlçe bilgisi eksikse tahmin üretilmiyor, boş
+bırakılıyor — yanlış eşleştirme riski, boş veriden daha kötü.
+
+**Kaynak-agnostik ETL tasarımı.** Client'ın 2026 sonunda farklı bir ERP / veritabanı sağlayıcısına
+geçeceği bilindiği için, ingestion katmanı Panorama'ya doğrudan bağımlı olmayacak şekilde kuruldu.
+
+## Stack
+
+| Katman | Teknoloji |
+| --- | --- |
+| Frontend | Next.js, Mapbox GL JS (harita, clustering, rota) |
+| Backend / Veri | Supabase (Postgres + Auth), SQL view'larla risk hesaplama |
+| ETL / Otomasyon | Python, n8n (Panorama'dan otomatik veri çekimi) |
+| Deploy | Vercel |
+
+## Sonuç
+
+Vercel ve Supabase üzerinde canlı, gerçek üretim verisiyle çalışıyor — mock/demo veri değil, gerçek ciro
+ve borç rakamlarıyla 1.426 müşteri. İlk veri yüklemesi 26 Temmuz 2026'da yapıldı, otomatik Panorama
+senkronu 2 Ağustos'tan beri çalışıyor.
+
+Yukarıdaki dağılım, haritanın ortaya çıkardığı en işe yarar tek şey oldu: müşteri tabanının %63'ünün
+hiçbir sevkiyat kaydı yoktu. Bu ERP'de görünmüyor, haritaya basıldığı anda apaçık ortaya çıkıyor.
+
+Saha ve satış ekibi artık Panorama'dan veri çekip Excel'de manuel işlem yapmak yerine, tek bir haritada
+teslimat ve ödeme riskine göre önceliklendirme yapabiliyor; rota doğrulaması ve segment / risk kırılımlı
+raporlama da aynı arayüzden alınıyor. Proje, dahili tek kiracılı bir operasyon aracı olarak Peritas
+ekibi tarafından aktif kullanılıyor.

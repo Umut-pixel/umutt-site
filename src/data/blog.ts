@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+import { DEFAULT_LOCALE, type Locale } from "@/data/i18n";
 
 export type PostMetadata = {
   title: string;
@@ -28,22 +29,30 @@ export type Post = PostListItem & {
 
 const CONTENT_DIR = path.join(process.cwd(), "content");
 
-function getMDXFiles(dir: string) {
-  if (!fs.existsSync(dir)) return [];
-  return fs.readdirSync(dir).filter((file) => path.extname(file) === ".mdx");
+/**
+ * A post lives at `<slug>.mdx` in English and `<slug>.tr.mdx` in Turkish, so
+ * both languages share one slug and one URL shape. A missing translation falls
+ * back to English rather than 404ing.
+ */
+export function localeFilePath(dir: string, slug: string, locale: Locale) {
+  const translated = path.join(dir, `${slug}.${locale}.mdx`);
+  if (locale !== DEFAULT_LOCALE && fs.existsSync(translated)) return translated;
+
+  const base = path.join(dir, `${slug}.mdx`);
+  return fs.existsSync(base) ? base : null;
 }
 
-function readFrontmatter(slug: string): PostListItem | null {
-  const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
-  if (!fs.existsSync(filePath)) return null;
+/** Canonical slugs in a content dir, ignoring the `.<locale>.mdx` variants. */
+export function canonicalSlugs(dir: string): string[] {
+  if (!fs.existsSync(dir)) return [];
 
-  const source = fs.readFileSync(filePath, "utf-8");
-  const { data } = matter(source);
+  const slugs = fs
+    .readdirSync(dir)
+    .filter((file) => path.extname(file) === ".mdx")
+    .map((file) => path.basename(file, ".mdx"))
+    .map((name) => name.replace(/\.(en|tr)$/, ""));
 
-  return {
-    slug,
-    metadata: data as PostMetadata,
-  };
+  return Array.from(new Set(slugs));
 }
 
 export async function markdownToHTML(markdown: string) {
@@ -65,13 +74,16 @@ export async function markdownToHTML(markdown: string) {
 }
 
 /** Lightweight list — frontmatter only, no MDX compile. */
-export async function getBlogPosts(): Promise<PostListItem[]> {
-  const files = getMDXFiles(CONTENT_DIR);
+export async function getBlogPosts(
+  locale: Locale = DEFAULT_LOCALE
+): Promise<PostListItem[]> {
+  return canonicalSlugs(CONTENT_DIR)
+    .map((slug) => {
+      const filePath = localeFilePath(CONTENT_DIR, slug, locale);
+      if (!filePath) return null;
 
-  return files
-    .map((file) => {
-      const slug = path.basename(file, path.extname(file));
-      return readFrontmatter(slug);
+      const { data } = matter(fs.readFileSync(filePath, "utf-8"));
+      return { slug, metadata: data as PostMetadata };
     })
     .filter((post): post is PostListItem => post !== null)
     .sort(
@@ -81,17 +93,20 @@ export async function getBlogPosts(): Promise<PostListItem[]> {
     );
 }
 
-export async function getPost(slug: string): Promise<Post | null> {
-  const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
-  if (!fs.existsSync(filePath)) return null;
+export async function getPost(
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE
+): Promise<Post | null> {
+  const filePath = localeFilePath(CONTENT_DIR, slug, locale);
+  if (!filePath) return null;
 
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { content: rawContent, data } = matter(raw);
-  const source = await markdownToHTML(rawContent);
+  const { content: rawContent, data } = matter(
+    fs.readFileSync(filePath, "utf-8")
+  );
 
   return {
     slug,
     metadata: data as PostMetadata,
-    source,
+    source: await markdownToHTML(rawContent),
   };
 }

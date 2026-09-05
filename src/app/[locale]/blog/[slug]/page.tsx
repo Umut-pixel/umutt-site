@@ -3,35 +3,37 @@ import BlurFade from "@/components/magicui/blur-fade";
 import { TokenEfficiencyChart } from "@/components/token-efficiency-chart";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { getBlogPosts, getPost } from "@/data/blog";
+import { canonicalSlugs, getPost } from "@/data/blog";
+import { LOCALES, dict, localePath, type Locale } from "@/data/i18n";
 import { DATA } from "@/data/resume";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import path from "path";
 
 const TOKEN_CHART_MARKER = "<p>The numbers back this up.";
+const TOKEN_CHART_MARKER_TR = "<p>Rakamlar bunu doğruluyor.";
 
-function formatHeaderDate(date: string) {
+function formatHeaderDate(date: string, locale: Locale) {
   const value = date.includes("T") ? date : `${date}T00:00:00`;
-  return new Date(value).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  return new Date(value).toLocaleDateString(
+    locale === "tr" ? "tr-TR" : "en-US",
+    { month: "long", day: "numeric", year: "numeric" }
+  );
 }
 
 export async function generateStaticParams() {
-  const posts = await getBlogPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+  const slugs = canonicalSlugs(path.join(process.cwd(), "content"));
+  return LOCALES.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: { slug: string; locale: Locale };
 }): Promise<Metadata | undefined> {
-  const post = await getPost(params.slug);
+  const post = await getPost(params.slug, params.locale);
   if (!post) return undefined;
 
   const {
@@ -42,7 +44,8 @@ export async function generateMetadata({
   } = post.metadata;
   const ogImage = image
     ? `${DATA.url}${image}`
-    : `${DATA.url}/og?title=${title}`;
+    : `${DATA.url}${DATA.avatarUrl}`;
+  const url = `${DATA.url}${localePath(`/blog/${post.slug}`, params.locale)}`;
 
   return {
     title,
@@ -52,7 +55,7 @@ export async function generateMetadata({
       description,
       type: "article",
       publishedTime,
-      url: `${DATA.url}/blog/${post.slug}`,
+      url,
       images: [{ url: ogImage }],
     },
     twitter: {
@@ -67,21 +70,23 @@ export async function generateMetadata({
 export default async function BlogPostPage({
   params,
 }: {
-  params: { slug: string };
+  params: { slug: string; locale: Locale };
 }) {
-  const post = await getPost(params.slug);
+  const locale = params.locale;
+  const post = await getPost(params.slug, locale);
 
   if (!post) {
     notFound();
   }
 
+  const b = dict(locale).blog;
   const { metadata, source, slug } = post;
-  const headerDate = formatHeaderDate(metadata.publishedAt);
-  const shareUrl = `${DATA.url}/blog/${slug}`;
+  const headerDate = formatHeaderDate(metadata.publishedAt, locale);
+  const shareUrl = `${DATA.url}${localePath(`/blog/${slug}`, locale)}`;
   const showTokenChart = slug === "ai-shouldnt-be-the-center-of-your-product";
-  const chartIndex = showTokenChart ? source.indexOf(TOKEN_CHART_MARKER) : -1;
-  const contentBefore =
-    chartIndex >= 0 ? source.slice(0, chartIndex) : source;
+  const marker = locale === "tr" ? TOKEN_CHART_MARKER_TR : TOKEN_CHART_MARKER;
+  const chartIndex = showTokenChart ? source.indexOf(marker) : -1;
+  const contentBefore = chartIndex >= 0 ? source.slice(0, chartIndex) : source;
   const contentAfter = chartIndex >= 0 ? source.slice(chartIndex) : "";
 
   return (
@@ -97,9 +102,10 @@ export default async function BlogPostPage({
             datePublished: metadata.publishedAt,
             dateModified: metadata.publishedAt,
             description: metadata.summary,
+            inLanguage: locale,
             image: metadata.image
               ? `${DATA.url}${metadata.image}`
-              : `${DATA.url}/og?title=${metadata.title}`,
+              : `${DATA.url}${DATA.avatarUrl}`,
             url: shareUrl,
             author: {
               "@type": "Person",
@@ -142,7 +148,7 @@ export default async function BlogPostPage({
 
       <div className="mx-auto mt-8 w-full min-w-0 max-w-[650px]">
         <Separator />
-        <BlogShare title={metadata.title} url={shareUrl} />
+        <BlogShare title={metadata.title} url={shareUrl} label={b.share} />
       </div>
 
       <BlurFade delay={0.1} duration={0.35} yOffset={4} blur="4px">
@@ -163,9 +169,9 @@ export default async function BlogPostPage({
         <Separator />
         <div className="pt-6">
           <Button asChild variant="outline" size="sm">
-            <Link href="/blog">
+            <Link href={localePath("/blog", locale)}>
               <ArrowLeftIcon className="mr-1.5 size-3.5" />
-              All posts
+              {b.allPosts}
             </Link>
           </Button>
         </div>

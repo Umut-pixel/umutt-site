@@ -1,0 +1,24 @@
+---
+title: "Yapay Zekâ Ürününüzün Merkezinde Olmamalı"
+publishedAt: "2026-07-18"
+summary: "Problemi ve çekirdek veriyi merkeze koymak, yapay zekâyı bir pazarlama kancası olarak kullanmaktan daha önemli."
+image: "/blog/ai-shouldnt-be-the-center-v3.png"
+company: "Company"
+companyUrl: "https://celixion.com"
+---
+
+"Hey Claude, bana interneti yap, hata da yapma!" yaklaşımı artık sadece bir şaka olmaktan çıktı — sessizce çoğu ürünün nasıl pazarlandığını yeniden yazdı. Bugün neredeyse her ürün lansmanı "yapay zekâ destekli" diye açılıyor, çözdüğü asıl problem ise arka koltuğa oturuyor. Yapay zekâ merkezli ürünlerin temel sorunu yapay zekânın kendisi değil; yapay zekânın, çözdüğü problemden daha çok pazarlanması. Problemi merkeze koymak, yapay zekâyı bir marka kancası olarak kullanmaktan daha değerli.
+
+Yapay zekâ merkezli akışlar kurduktan sonra bir şey fark ettim. Problemi ve çekirdek veriyi ürünün merkezine koyup yapay zekâ araçlarını olduğu gibi — araç olarak, merkezî sistem olarak değil — ele aldığınızda sonuç hem daha optimize hem daha sağlam çıkıyor.
+
+Bunu yeni girişimimiz Celixion'u kurarken öğrendik. Çözmeye giriştiğimiz problem, kuru yük taşımacılığındaki operasyonel veri karmaşasıydı; brokerların ve kiracıların her gün boğuştuğu dağınıklığı yapay zekâyla düzeltmek istiyorduk. Ama başta yanlış yaklaştık: her operasyonel e-postayı doğrudan yapay zekâya verdik, bu da token yaktı ve dağınık çıktı üretti. Veri alımını akıl yürütmeden ayırmamıştık — yapay zekâ ikisini aynı anda yapıyor, ham e-posta metnini yutup aynı adımda ondan yapı çıkarmaya çalışıyordu.
+
+Hatayı yakaladıktan sonra yaklaşımı baştan kurduk: önce veri. Veriyi önce hafif, kural tabanlı bir katmandan geçirip ayrıştırıp normalleştiriyoruz; kargo tipi, çıkış ve varış gibi yapılandırılmış alanları çıkarıyoruz ve yapay zekâya ham metni değil, temizlenmiş ve normalleştirilmiş kaydı doğrulama ile kalite iyileştirmesi için veriyoruz. En zor kısım ayrıştırma, regex ya da algoritmalar değildi — yapay zekânın mümkün olan en temiz girdiyle çalışabilmesi için veri normalleştirmeyi doğru kurmaktı.
+
+Rakamlar bunu doğruluyor. Mayıs ile Temmuz 2026 arasında istek başına ortalama token kullanımımız **%87,6** düştü; 8.687 tokendan 1.080'e indi. Aynı dönemde işlediğimiz istek hacmi **12 kat** arttı; 3.311'den 40.103'e çıktı. Aynı iş yükü, birim başına çok daha az israf — çünkü yapay zekâ nihayet ham gürültü yerine yapılandırılmış veri üzerinde çalışıyordu.
+
+Problemi ve çekirdek veriyi merkeze koymak, yapay zekâ katmanını üstüne eklemeden önce evi sağlam temele oturtmak gibi. Yapay zekâya verdiğiniz kaynak ne kadar temizse, çıktı da o kadar optimale yaklaşıyor.
+
+Ürününüzde ya da iş akışınızda yapay zekâ kullanmak sorun değil — yapay zekâ bir umacı değil! Hayatımızı çoktan değiştirdi ve değiştirmeye devam edecek. Asıl sorun, onu körü körüne kullanıp iş akışınızın çıktısını anlaşılmaz bir şeye dönüştürmek.
+
+Ürünler problem çözer. Yapay zekâ bu sürecin içindeki bir araçtır, sürecin kendisi değil.

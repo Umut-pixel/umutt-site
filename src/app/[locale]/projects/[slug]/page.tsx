@@ -4,6 +4,7 @@ import BlurFade from "@/components/magicui/blur-fade";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { LOCALES, dict, localePath, type Locale } from "@/data/i18n";
 import {
   getProject,
   getProjectSlugs,
@@ -39,19 +40,24 @@ function renderChart(chart: ProjectChart) {
 }
 
 export async function generateStaticParams() {
-  return getProjectSlugs().map((slug) => ({ slug }));
+  const slugs = getProjectSlugs();
+  return LOCALES.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: { slug: string; locale: Locale };
 }): Promise<Metadata | undefined> {
-  const project = await getProject(params.slug);
+  const project = await getProject(params.slug, params.locale);
   if (!project) return undefined;
 
   const { title, summary: description, image } = project.metadata;
   const ogImage = `${DATA.url}${image || DATA.avatarUrl}`;
+  const url = `${DATA.url}${localePath(
+    `/projects/${project.slug}`,
+    params.locale
+  )}`;
 
   return {
     title,
@@ -60,7 +66,7 @@ export async function generateMetadata({
       title,
       description,
       type: "article",
-      url: `${DATA.url}/projects/${project.slug}`,
+      url,
       images: [{ url: ogImage }],
     },
     twitter: {
@@ -75,14 +81,16 @@ export async function generateMetadata({
 export default async function ProjectPage({
   params,
 }: {
-  params: { slug: string };
+  params: { slug: string; locale: Locale };
 }) {
-  const project = await getProject(params.slug);
+  const locale = params.locale;
+  const project = await getProject(params.slug, locale);
 
   if (!project) {
     notFound();
   }
 
+  const p = dict(locale).project;
   const { metadata, source } = project;
   const { title, summary, dates, status, technologies } = metadata;
   const hasLinks = Boolean(metadata.website || metadata.source);
@@ -136,7 +144,7 @@ export default async function ProjectPage({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Visit website
+                    {p.visitWebsite}
                   </a>
                 </Button>
               ) : null}
@@ -147,7 +155,7 @@ export default async function ProjectPage({
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Source
+                    {p.source}
                   </a>
                 </Button>
               ) : null}
@@ -174,9 +182,9 @@ export default async function ProjectPage({
         <Separator />
         <div className="pt-6">
           <Button asChild variant="outline" size="sm">
-            <Link href="/#projects">
+            <Link href={localePath("/#projects", locale)}>
               <ArrowLeftIcon className="mr-1.5 size-3.5" />
-              All projects
+              {p.allProjects}
             </Link>
           </Button>
         </div>

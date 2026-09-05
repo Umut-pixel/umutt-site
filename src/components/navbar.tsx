@@ -1,3 +1,4 @@
+import { LocaleToggle } from "@/components/locale-toggle";
 import { Dock, DockIcon } from "@/components/magicui/dock";
 import { ModeToggle } from "@/components/mode-toggle";
 import { buttonVariants } from "@/components/ui/button";
@@ -7,11 +8,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { dict, localePath, type Locale } from "@/data/i18n";
 import { DATA } from "@/data/resume";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export default function Navbar() {
+export default function Navbar({ locale }: { locale: Locale }) {
+  const nav = dict(locale).nav;
+  const other = locale === "en" ? "Türkçe" : "English";
+
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto mb-4 flex origin-bottom h-full max-h-14">
       <div className="fixed bottom-0 inset-x-0 h-16 w-full bg-background to-transparent backdrop-blur-lg [-webkit-mask-image:linear-gradient(to_top,black,transparent)] dark:bg-background"></div>
@@ -21,7 +26,7 @@ export default function Navbar() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  href={item.href}
+                  href={localePath(item.href, locale)}
                   className={cn(
                     buttonVariants({ variant: "ghost", size: "icon" }),
                     "size-12"
@@ -31,7 +36,7 @@ export default function Navbar() {
                 </Link>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{item.label}</p>
+                <p>{nav[item.labelKey]}</p>
               </TooltipContent>
             </Tooltip>
           </DockIcon>
@@ -63,10 +68,22 @@ export default function Navbar() {
         <DockIcon>
           <Tooltip>
             <TooltipTrigger asChild>
+              <LocaleToggle locale={locale} />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {nav.language} · {other}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </DockIcon>
+        <DockIcon>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <ModeToggle />
             </TooltipTrigger>
             <TooltipContent>
-              <p>Theme</p>
+              <p>{nav.theme}</p>
             </TooltipContent>
           </Tooltip>
         </DockIcon>

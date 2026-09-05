@@ -36,7 +36,7 @@ chart:
 
 ## The problem
 
-Peritas Pet Food is a pet food distributor operating in the Aegean region of Turkey. All of their
+Peritas Pet Food is a pet shop and veterinary distributor operating in the Aegean region of Turkey. All of their
 customer, shipment, and receivables data lives in the Panorama (Univera) ERP — but it wasn't usable
 by the people who actually needed it. To see how customers were distributed geographically, or to
 find the ones whose deliveries had stalled or whose debt was piling up, someone had to export to
@@ -48,15 +48,17 @@ much?* The data existed. Getting an answer out of it took an afternoon.
 
 ## What Locus does
 
-Locus ingests five different Panorama report exports — customer list, route definitions, shipment
-cube, receivables ageing, and document detail — then cleans, joins, and renders them as a single map
-coloured by risk.
+Locus ingests five different Panorama report exports — `MüşteriListesi` (customers),
+`RutTanımListesi` (route definitions), `SevkiyatRaporuKüp` (shipment cube), `StYaşlandırma`
+(receivables ageing) and `BelgeDetayRaporu` (document detail) — then cleans, joins, and renders them
+as a single map coloured by risk.
 
 It does not replace Panorama. It sits on top of it as a decision-support layer the field team uses
 day to day.
 
 - **The map.** 1,426 customers in the database, 1,313 of them placed on the map — clustered by
   location, coloured by risk state, with Mapbox Directions API integration for route verification.
+  Neither risk axis is collapsed into the other.
 - **Two separate risk axes.** *Delivery risk* is derived from time elapsed since the last shipment
   (healthy / watch / at-risk / never delivered). *Payment risk* comes from the receivables ageing
   bands — overdue amounts past 56 days, currently flagging 120 customers. These are deliberately kept
@@ -109,5 +111,4 @@ invisible in the ERP and obvious the moment it is plotted.
 
 The field and sales teams no longer pull exports from Panorama and process them in Excel. They
 prioritise from a single map by delivery and payment risk, verify routes, and pull segment- and
-risk-segmented reports from the same interface. The project is in active use by the Peritas team as
-an internal, single-tenant operations tool.
+risk-segmented reports from the same interface. The project is in active use by the Peritas team as an internal, single-tenant operations tool.

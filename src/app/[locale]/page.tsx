@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getBlogPosts } from "@/data/blog";
+import { dict, localePath, t, type Locale } from "@/data/i18n";
 import { DATA } from "@/data/resume";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,8 +16,18 @@ import Markdown from "react-markdown";
 
 const BLUR_FADE_DELAY = 0.04;
 
-export default async function Page() {
-  const posts = (await getBlogPosts()).slice(0, 2);
+export default async function Page({
+  params,
+}: {
+  params: { locale: Locale };
+}) {
+  const locale = params.locale;
+  const s = dict(locale).home;
+  const p = dict(locale).project;
+  const posts = (await getBlogPosts(locale)).slice(0, 2);
+
+  const linkLabel = (key: "website" | "source") =>
+    key === "website" ? p.visitWebsite : p.source;
 
   return (
     <main className="flex flex-col min-h-[100dvh] space-y-10">
@@ -28,12 +39,12 @@ export default async function Page() {
                 delay={BLUR_FADE_DELAY}
                 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none"
                 yOffset={8}
-                text={`Hi, I'm ${DATA.name.split(" ")[0]} 👋`}
+                text={s.greeting(DATA.name.split(" ")[0])}
               />
               <BlurFadeText
                 className="max-w-[600px] md:text-xl"
                 delay={BLUR_FADE_DELAY}
-                text={DATA.description}
+                text={t(DATA.description, locale)}
               />
             </div>
             <BlurFade delay={BLUR_FADE_DELAY} duration={0.35} yOffset={4} blur="4px">
@@ -55,34 +66,31 @@ export default async function Page() {
       </section>
       <section id="about">
         <BlurFade delay={BLUR_FADE_DELAY * 3}>
-          <h2 className="text-xl font-bold">About</h2>
+          <h2 className="text-xl font-bold">{s.about}</h2>
         </BlurFade>
         <BlurFade delay={BLUR_FADE_DELAY * 4}>
           <Markdown className="prose max-w-full text-pretty font-sans text-sm text-muted-foreground dark:prose-invert">
-            {DATA.summary}
+            {t(DATA.summary, locale)}
           </Markdown>
         </BlurFade>
       </section>
       <section id="work">
         <div className="flex min-h-0 flex-col gap-y-3">
           <BlurFade delay={BLUR_FADE_DELAY * 5}>
-            <h2 className="text-xl font-bold">Work Experience</h2>
+            <h2 className="text-xl font-bold">{s.work}</h2>
           </BlurFade>
           {DATA.work.map((work, id) => (
-            <BlurFade
-              key={work.company}
-              delay={BLUR_FADE_DELAY * 6 + id * 0.05}
-            >
+            <BlurFade key={work.company} delay={BLUR_FADE_DELAY * 6 + id * 0.05}>
               <ResumeCard
                 key={work.company}
                 logoUrl={work.logoUrl}
                 altText={work.company}
                 title={work.company}
-                subtitle={work.title}
+                subtitle={t(work.title, locale)}
                 href={work.href}
                 badges={work.badges}
-                period={`${work.start} - ${work.end ?? "Present"}`}
-                description={work.description}
+                period={`${t(work.start, locale)} - ${t(work.end, locale)}`}
+                description={t(work.description, locale)}
               />
             </BlurFade>
           ))}
@@ -91,7 +99,7 @@ export default async function Page() {
       <section id="education">
         <div className="flex min-h-0 flex-col gap-y-3">
           <BlurFade delay={BLUR_FADE_DELAY * 7}>
-            <h2 className="text-xl font-bold">Education</h2>
+            <h2 className="text-xl font-bold">{s.education}</h2>
           </BlurFade>
           {DATA.education.map((education, id) => (
             <BlurFade
@@ -104,7 +112,7 @@ export default async function Page() {
                 logoUrl={education.logoUrl}
                 altText={education.school}
                 title={education.school}
-                subtitle={education.degree}
+                subtitle={t(education.degree, locale)}
                 period={`${education.start} - ${education.end}`}
               />
             </BlurFade>
@@ -114,7 +122,7 @@ export default async function Page() {
       <section id="skills">
         <div className="flex min-h-0 flex-col gap-y-3">
           <BlurFade delay={BLUR_FADE_DELAY * 9}>
-            <h2 className="text-xl font-bold">Skills</h2>
+            <h2 className="text-xl font-bold">{s.skills}</h2>
           </BlurFade>
           <div className="flex flex-wrap gap-1">
             {DATA.skills.map((skill, id) => (
@@ -131,15 +139,13 @@ export default async function Page() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                  My Projects
+                  {s.projectsBadge}
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Check out my latest work
+                  {s.projectsTitle}
                 </h2>
                 <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  I&apos;ve worked on a variety of projects, from simple
-                  websites to complex web applications. Here are a few of my
-                  favorites.
+                  {s.projectsBlurb}
                 </p>
               </div>
             </div>
@@ -152,18 +158,30 @@ export default async function Page() {
               >
                 <ProjectCard
                   href={
-                    project.slug ? `/projects/${project.slug}` : project.href
+                    project.slug
+                      ? localePath(`/projects/${project.slug}`, locale)
+                      : project.href
                   }
                   key={project.title}
                   title={project.title}
-                  description={project.description}
-                  dates={project.dates}
+                  description={t(project.description, locale)}
+                  dates={t(project.dates, locale)}
                   tags={project.technologies}
                   image={project.image}
                   imageFit={project.imageFit}
                   video={project.video}
                   slug={project.slug}
-                  links={project.links}
+                  caseStudyLabel={p.caseStudy}
+                  caseStudyHref={
+                    project.slug
+                      ? localePath(`/projects/${project.slug}`, locale)
+                      : undefined
+                  }
+                  links={project.links.map((link) => ({
+                    href: link.href,
+                    icon: link.icon,
+                    type: linkLabel(link.typeKey),
+                  }))}
                 />
               </BlurFade>
             ))}
@@ -176,14 +194,13 @@ export default async function Page() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                  Blog
+                  {s.blogBadge}
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  Latest writing
+                  {s.blogTitle}
                 </h2>
                 <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  A few recent notes on building products, shipping software,
-                  and the things I&apos;m learning along the way.
+                  {s.blogBlurb}
                 </p>
               </div>
             </div>
@@ -200,7 +217,7 @@ export default async function Page() {
                 <BlogCard
                   title={post.metadata.title}
                   date={post.metadata.publishedAt}
-                  href={`/blog/${post.slug}`}
+                  href={localePath(`/blog/${post.slug}`, locale)}
                   image={post.metadata.image}
                   priority
                 />
@@ -210,7 +227,7 @@ export default async function Page() {
           <BlurFade delay={BLUR_FADE_DELAY * 14} duration={0.3} yOffset={2} blur="3px">
             <div className="flex justify-center">
               <Button asChild variant="outline" size="sm">
-                <Link href="/blog">View all posts</Link>
+                <Link href={localePath("/blog", locale)}>{s.viewAllPosts}</Link>
               </Button>
             </div>
           </BlurFade>
@@ -222,18 +239,13 @@ export default async function Page() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                  Events
+                  {s.eventsBadge}
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                  I like building things
+                  {s.eventsTitle}
                 </h2>
                 <p className="text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  During my time in university, I attended{" "}
-                  {DATA.hackathons.length}+ hackathons. People from around the
-                  country would come together and build incredible things in 2-3
-                  days. It was eye-opening to see the endless possibilities
-                  brought to life by a group of motivated and passionate
-                  individuals.
+                  {s.eventsBlurb(DATA.hackathons.length)}
                 </p>
               </div>
             </div>
@@ -242,14 +254,14 @@ export default async function Page() {
             <ul className="mb-4 ml-4 divide-y divide-dashed border-l">
               {DATA.hackathons.map((project, id) => (
                 <BlurFade
-                  key={project.title + project.dates}
+                  key={t(project.title, locale) + t(project.dates, locale)}
                   delay={BLUR_FADE_DELAY * 17 + id * 0.05}
                 >
                   <HackathonCard
-                    title={project.title}
-                    description={project.description}
+                    title={t(project.title, locale)}
+                    description={t(project.description, locale)}
                     location={project.location}
-                    dates={project.dates}
+                    dates={t(project.dates, locale)}
                     image={project.image}
                     links={project.links}
                   />
@@ -264,21 +276,20 @@ export default async function Page() {
           <BlurFade delay={BLUR_FADE_DELAY * 18}>
             <div className="space-y-3">
               <div className="inline-block rounded-lg bg-foreground text-background px-3 py-1 text-sm">
-                Contact
+                {s.contactBadge}
               </div>
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-                Get in Touch
+                {s.contactTitle}
               </h2>
               <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Want to chat? Just shoot me an email at{" "}
+                {s.contactBefore}{" "}
                 <Link
                   href={`mailto:${DATA.contact.email}`}
                   className="text-blue-500 hover:underline"
                 >
                   {DATA.contact.email}
                 </Link>{" "}
-                and I&apos;ll respond whenever I can. I will ignore all
-                soliciting.
+                {s.contactAfter}
               </p>
             </div>
           </BlurFade>

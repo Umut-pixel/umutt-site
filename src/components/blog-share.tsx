@@ -12,9 +12,14 @@ import { useState } from "react";
 type BlogShareProps = {
   title: string;
   url: string;
+  label?: string;
 };
 
-export function BlogShare({ title, url }: BlogShareProps) {
+export function BlogShare({
+  title,
+  url,
+  label = "Share the link",
+}: BlogShareProps) {
   const [copied, setCopied] = useState(false);
 
   const copyLink = async () => {
@@ -31,7 +36,7 @@ export function BlogShare({ title, url }: BlogShareProps) {
     <div className="flex items-center justify-between gap-4 py-3">
       <p className="min-w-0 text-sm text-muted-foreground">
         Enjoyed this?{" "}
-        <span className="text-foreground/80">Share the link</span>
+        <span className="text-foreground/80">{label}</span>
       </p>
       <Popover>
         <PopoverTrigger asChild>

@@ -4,19 +4,31 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { getBlogPosts } from "@/data/blog";
+import { dict, localePath, type Locale } from "@/data/i18n";
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "Blog",
-  description: "Notes on building products, shipping software, and learning.",
-};
-
 const BLUR_FADE_DELAY = 0.04;
 
-export default async function BlogPage() {
-  const posts = await getBlogPosts();
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: Locale };
+}): Promise<Metadata> {
+  const b = dict(params.locale).blog;
+  return { title: b.badge, description: b.metaDescription };
+}
+
+export default async function BlogPage({
+  params,
+}: {
+  params: { locale: Locale };
+}) {
+  const locale = params.locale;
+  const b = dict(locale).blog;
+  const nav = dict(locale).nav;
+  const posts = await getBlogPosts(locale);
 
   return (
     <main className="flex flex-col space-y-8">
@@ -27,9 +39,9 @@ export default async function BlogPage() {
           size="sm"
           className="-ml-2 w-fit text-muted-foreground"
         >
-          <Link href="/">
+          <Link href={localePath("/", locale)}>
             <ArrowLeftIcon className="mr-1.5 size-3.5" />
-            Home
+            {nav.home}
           </Link>
         </Button>
       </BlurFade>
@@ -37,14 +49,13 @@ export default async function BlogPage() {
       <BlurFade delay={BLUR_FADE_DELAY * 2}>
         <div className="space-y-3">
           <Badge className="rounded-lg px-3 py-1 text-sm font-normal">
-            Blog
+            {b.badge}
           </Badge>
           <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-            Writing
+            {b.title}
           </h1>
           <p className="max-w-xl text-muted-foreground md:text-lg/relaxed">
-            Notes on building products, shipping software, and the things
-            I&apos;m learning along the way.
+            {b.blurb}
           </p>
         </div>
       </BlurFade>
@@ -66,7 +77,7 @@ export default async function BlogPage() {
               title={post.metadata.title}
               summary={post.metadata.summary}
               date={post.metadata.publishedAt}
-              href={`/blog/${post.slug}`}
+              href={localePath(`/blog/${post.slug}`, locale)}
               image={post.metadata.image}
               priority={id < 2}
               showSummary
@@ -76,7 +87,7 @@ export default async function BlogPage() {
       </div>
 
       {posts.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No posts yet.</p>
+        <p className="text-sm text-muted-foreground">{b.empty}</p>
       ) : null}
     </main>
   );

@@ -1,7 +1,12 @@
 import fs from "fs";
 import matter from "gray-matter";
 import path from "path";
-import { markdownToHTML } from "@/data/blog";
+import {
+  canonicalSlugs,
+  localeFilePath,
+  markdownToHTML,
+} from "@/data/blog";
+import { DEFAULT_LOCALE, type Locale } from "@/data/i18n";
 
 export type ProjectChart =
   | {
@@ -50,26 +55,24 @@ export type ProjectDoc = {
 const CONTENT_DIR = path.join(process.cwd(), "content", "projects");
 
 export function getProjectSlugs(): string[] {
-  if (!fs.existsSync(CONTENT_DIR)) return [];
-
-  return fs
-    .readdirSync(CONTENT_DIR)
-    .filter((file) => path.extname(file) === ".mdx")
-    .map((file) => path.basename(file, path.extname(file)));
+  return canonicalSlugs(CONTENT_DIR);
 }
 
-export async function getProject(slug: string): Promise<ProjectDoc | null> {
-  const filePath = path.join(CONTENT_DIR, `${slug}.mdx`);
-  if (!fs.existsSync(filePath)) return null;
+export async function getProject(
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE
+): Promise<ProjectDoc | null> {
+  const filePath = localeFilePath(CONTENT_DIR, slug, locale);
+  if (!filePath) return null;
 
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const { content: rawContent, data } = matter(raw);
-  const source = await markdownToHTML(rawContent);
+  const { content: rawContent, data } = matter(
+    fs.readFileSync(filePath, "utf-8")
+  );
 
   return {
     slug,
     metadata: data as ProjectMetadata,
-    source,
+    source: await markdownToHTML(rawContent),
   };
 }
 

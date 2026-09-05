@@ -22,6 +22,9 @@ interface Props {
   imageFit?: "cover" | "contain";
   video?: string;
   slug?: string;
+  /** Locale-aware link + label for the in-site case study. */
+  caseStudyHref?: string;
+  caseStudyLabel?: string;
   links?: readonly {
     icon: React.ReactNode;
     type: string;
@@ -41,10 +44,13 @@ export function ProjectCard({
   imageFit = "cover",
   video,
   slug,
+  caseStudyHref,
+  caseStudyLabel,
   links,
   className,
 }: Props) {
-  const hasFooter = slug || (links && links.length > 0);
+  const showCaseStudy = Boolean(slug && caseStudyHref);
+  const hasFooter = showCaseStudy || (links && links.length > 0);
 
   return (
     <Card
@@ -111,10 +117,10 @@ export function ProjectCard({
       <CardFooter className="px-2 pb-2">
         {hasFooter && (
           <div className="flex flex-row flex-wrap items-start gap-1">
-            {slug && (
-              <Link href={`/projects/${slug}`}>
+            {showCaseStudy && (
+              <Link href={caseStudyHref as string}>
                 <Badge className="flex gap-2 px-2 py-1 text-[10px]">
-                  Case study
+                  {caseStudyLabel}
                 </Badge>
               </Link>
             )}

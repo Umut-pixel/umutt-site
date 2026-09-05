@@ -1,0 +1,120 @@
+---
+title: "Celixion"
+summary: "An operations hub for maritime and dry cargo brokers — the moment a quote email lands, Celixion parses it, files the vessel or cargo, and surfaces the best match."
+dates: "September 2025"
+status: "Active"
+image: "/blog/building-celixion-v2.png"
+technologies:
+  - "Next.js"
+  - "TypeScript"
+  - "PostgreSQL + Supabase"
+  - "Prisma"
+  - "Mapbox"
+  - "Recharts"
+  - "TailwindCSS"
+  - "Shadcn UI"
+  - "Magic UI"
+  - "n8n"
+  - "Python"
+  - "Cloudflare Workers"
+website: "https://celixion.com"
+chart:
+  type: metrics
+  after: "Impact"
+  title: "In production"
+  description: "Live figures from the Celixion production database, 30 April – 4 September 2026."
+  metrics:
+    - label: "Emails processed"
+      value: 23453
+    - label: "Emails / day"
+      value: 185
+    - label: "Vessels tracked"
+      value: 2450
+    - label: "Cargo offers"
+      value: 5339
+---
+
+## The problem
+
+Maritime and dry cargo brokerage still runs on email and Excel. A broker's day is spent opening
+dozens of quote emails one by one, pulling the vessel or cargo details out by hand, comparing them
+against separate spreadsheets, and trying to find the match. Ships, cargos, and the connections
+between them get buried in threads.
+
+It is slow, and on a busy day it is the kind of slow that loses deals. The information exists.
+Getting an answer out of it takes an afternoon.
+
+## What Celixion does
+
+Celixion inverts the process. The moment a quote email arrives, the system reads it, files the
+vessel or cargo record, and puts the most likely match in front of the broker — nobody moves between
+an inbox and a spreadsheet any more.
+
+Everything runs from one control centre:
+
+- **Live fleet tracking** — vessels followed on a map in real time.
+- **Smart matching** — incoming cargo and vessel listings compared automatically, with the best
+  candidates surfaced first.
+- **Market intelligence** — port congestion, market movement, and alerts on a single screen.
+- **Operations tracking** — open work, quotes, and historical records managed in one place.
+
+It does not replace the broker's judgement. It removes the twenty minutes of searching that used to
+come before it.
+
+## How it works
+
+**Parsing pipelines.** Raw emails are ingested and broken down into candidate fields — vessel names,
+dates, tonnage, ports, cargo types. Because the input is genuinely messy, parsing is treated as a
+pipeline with stages rather than a single extraction step.
+
+**AI-supported classification.** Language models handle the part that resists rigid rules: deciding
+what a message actually is, and mapping loose phrasing onto the data model. The prompts live in the
+codebase and are iterated on like any other component.
+
+**A Supabase-backed data model.** Ships, cargos, and matches live in PostgreSQL behind Supabase,
+with Prisma over the top. This is the layer everything else reads from — the entire point of the
+system is that this data is finally structured enough to query.
+
+**Automation and edge work.** n8n orchestrates the background workflows that read mail, resolve
+ports and routes, and drive matching. Python covers data processing, and Cloudflare Workers sit at
+the edge.
+
+## Impact
+
+The change shows up in the daily loop. What used to be constant inbox scanning and manual
+cross-referencing between tables is now a match presented the moment the mail lands.
+
+Since the mail pipeline went live at the end of April 2026 it has processed 23,453 emails — roughly
+185 a day — into 2,450 vessel records and 5,339 cargo offers, with 92% accuracy on automatic
+matching.
+
+## On the stack
+
+| Layer | Technology |
+| --- | --- |
+| Interface | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui, Magic UI |
+| Data | Supabase (Postgres + Auth), Prisma |
+| Maps and tracking | Mapbox / Leaflet — live fleet visualisation |
+| Automation | n8n, Python, Cloudflare Workers — mail ingestion, port and route resolution, matching |
+| Reporting | Recharts — market and performance charts |
+| Notifications | Automated email delivery and quote follow-up |
+
+The stack was chosen for speed of iteration more than novelty. Every piece is something I can change
+quickly while the product is still finding its shape — which, for a system whose hardest problem is
+the unpredictability of its input, matters more than picking the most interesting tool.
+
+## Who it's for
+
+Maritime brokers and cargo companies — teams that have to track a large number of vessel and cargo
+offers every day.
+
+## Where it stands
+
+I stepped away from contract work at the end of 2025 to build Celixion full time, as Software
+Developer and Founder. Development started in July 2025 and the platform is in active daily use by
+real broker teams.
+
+For the technical detail and the problems hit along the way, read
+[Building Celixion](/blog/building-celixion) — and on why the AI layer is deliberately not the
+centre of the product, [AI shouldn't be the center of your
+product](/blog/ai-shouldnt-be-the-center-of-your-product).

@@ -1,0 +1,113 @@
+---
+title: "Locus"
+summary: "A customer map and risk-analysis platform for a pet food distributor — merging fragmented ERP exports into one map of 1,400+ customers scored for delivery and payment risk."
+dates: "July 2026"
+status: "Active"
+image: "/locus-mark.png"
+technologies:
+  - "Next.js"
+  - "Mapbox GL JS"
+  - "Supabase"
+  - "PostgreSQL"
+  - "Python"
+  - "n8n"
+  - "Vercel"
+website: "https://locus-two-delta.vercel.app"
+chart:
+  type: bars
+  after: "What Locus does"
+  title: "Delivery risk distribution"
+  description: "Every mapped customer falls into one of four bands, computed in SQL from time elapsed since the last shipment. Live figures from the production database."
+  unit: "mapped customers"
+  rows:
+    - label: "Healthy"
+      value: 226
+      note: "Shipped within the expected cycle"
+    - label: "Watch"
+      value: 62
+      note: "Slipping behind the usual cadence"
+    - label: "At risk"
+      value: 192
+      note: "Well past the expected delivery window"
+    - label: "Never delivered"
+      value: 833
+      note: "On the books, no shipment on record"
+---
+
+## The problem
+
+Peritas Pet Food is a pet food distributor operating in the Aegean region of Turkey. All of their
+customer, shipment, and receivables data lives in the Panorama (Univera) ERP — but it wasn't usable
+by the people who actually needed it. To see how customers were distributed geographically, or to
+find the ones whose deliveries had stalled or whose debt was piling up, someone had to export to
+Excel and rebuild pivot tables and VLOOKUPs by hand, every single time.
+
+The ERP's own reporting layer could not answer the questions the field team asked daily: *which
+customers haven't had a delivery in 90 days?* *Who has an overdue balance past 56 days, and how
+much?* The data existed. Getting an answer out of it took an afternoon.
+
+## What Locus does
+
+Locus ingests five different Panorama report exports — customer list, route definitions, shipment
+cube, receivables ageing, and document detail — then cleans, joins, and renders them as a single map
+coloured by risk.
+
+It does not replace Panorama. It sits on top of it as a decision-support layer the field team uses
+day to day.
+
+- **The map.** 1,426 customers in the database, 1,313 of them placed on the map — clustered by
+  location, coloured by risk state, with Mapbox Directions API integration for route verification.
+- **Two separate risk axes.** *Delivery risk* is derived from time elapsed since the last shipment
+  (healthy / watch / at-risk / never delivered). *Payment risk* comes from the receivables ageing
+  bands — overdue amounts past 56 days, currently flagging 120 customers. These are deliberately kept
+  apart rather than collapsed into one score, because they mean different things and need different
+  responses.
+- **Reporting.** An exportable customer table broken down by segment, risk, revenue, and open
+  balance.
+- **Data intake.** Manual Excel export from Panorama, an in-app upload flow, then parse and upsert
+  into Supabase — plus a partial browser-automation sync layer built with n8n.
+
+## Engineering decisions
+
+**Risk is calculated in the database, in exactly one place.** All the risk logic lives in a single
+SQL view (`musteriler_harita`). The frontend never re-implements or recomputes any of it. That makes
+an entire class of bug — the number on screen disagreeing with the real number — structurally
+impossible rather than merely unlikely.
+
+**Confronting what the source data actually looked like.** The ERP export was not trustworthy on its
+own. Revenue figures mixed VAT-inclusive and VAT-exclusive values. Column names lied — `KoordinatX`
+was actually latitude. The district field was only 77% populated. Vehicle and plate fields held
+placeholder constants. Each of these was found, documented, and handled in the ETL and view layer,
+rather than papered over to produce false precision in the interface.
+
+**Geocoding was deliberately kept shallow.** Street-level geocoding services (Nominatim) turned out
+to be effectively 0% accurate for Turkish addresses in practice. So Locus uses neighbourhood-centroid
+precision plus real GPS coordinates collected from the field. Where district information is missing,
+nothing is guessed — the value is left empty. A wrong pin is worse than no pin.
+
+**The ETL was built source-agnostic.** The client is moving to a different ERP and database provider
+by the end of 2026, so the ingestion layer was designed from the start not to be coupled to
+Panorama's specifics.
+
+## On the stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js, Mapbox GL JS (map, clustering, routing) |
+| Backend / data | Supabase (Postgres + Auth), risk computed in SQL views |
+| ETL / automation | Python, n8n (automated extraction from Panorama) |
+| Deploy | Vercel |
+
+## Where it stands
+
+First data load landed on 26 July 2026 and the automated Panorama sync has been running since
+2 August; the system has been in continuous use ever since. Locus runs live on Vercel and Supabase
+against real production data — 1,426 customers with real
+revenue and receivables figures, not mock or demo data. The distribution above is the single most
+useful thing the map surfaced: 63% of the customer base had no shipment on record at all, which is
+invisible in the ERP and obvious the moment it is plotted.
+
+The field and sales teams no longer pull exports from Panorama and process them in Excel. They
+prioritise from a single map by delivery and payment risk, verify routes, and pull segment- and
+risk-segmented reports from the same interface. The project is in active use by the Peritas team as
+an internal, single-tenant operations tool.

@@ -19,7 +19,9 @@ interface Props {
   tags: readonly string[];
   link?: string;
   image?: string;
+  imageFit?: "cover" | "contain";
   video?: string;
+  slug?: string;
   links?: readonly {
     icon: React.ReactNode;
     type: string;
@@ -36,10 +38,14 @@ export function ProjectCard({
   tags,
   link,
   image,
+  imageFit = "cover",
   video,
+  slug,
   links,
   className,
 }: Props) {
+  const hasFooter = slug || (links && links.length > 0);
+
   return (
     <Card
       className={
@@ -66,7 +72,12 @@ export function ProjectCard({
             alt={title}
             width={500}
             height={300}
-            className="h-40 w-full overflow-hidden object-cover object-top"
+            className={cn(
+              "h-40 w-full overflow-hidden",
+              imageFit === "contain"
+                ? "bg-muted object-contain p-6"
+                : "object-cover object-center"
+            )}
           />
         )}
       </Link>
@@ -98,10 +109,21 @@ export function ProjectCard({
         )}
       </CardContent>
       <CardFooter className="px-2 pb-2">
-        {links && links.length > 0 && (
+        {hasFooter && (
           <div className="flex flex-row flex-wrap items-start gap-1">
+            {slug && (
+              <Link href={`/projects/${slug}`}>
+                <Badge className="flex gap-2 px-2 py-1 text-[10px]">
+                  Case study
+                </Badge>
+              </Link>
+            )}
             {links?.map((link, idx) => (
-              <Link href={link?.href} key={idx} target="_blank">
+              <Link
+                href={link?.href}
+                key={idx}
+                target={link.href.startsWith("/") ? undefined : "_blank"}
+              >
                 <Badge key={idx} className="flex gap-2 px-2 py-1 text-[10px]">
                   {link.icon}
                   {link.type}

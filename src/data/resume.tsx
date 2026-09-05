@@ -11,7 +11,7 @@ export const DATA = {
     "Software developer building products, not just projects. Right now I'm focused on Celixion, an AI-powered platform for dry cargo shipping brokerage, and figuring out how to make it work in the real world.",
   summary:
     "At the end of 2025 I stepped away from contract work and university projects to focus fully on building my own product. [I studied computer programming](/#education) in İzmir, worked as a [freelance full-stack developer](/#work), and picked up experience across web, AI, and maritime logistics along the way. Now I'm building [Celixion](https://celixion.com) with React, Next.js, Node.js, Supabase, and modern AI tooling to ship fast, practical solutions for maritime brokers.",
-  avatarUrl: "/me.png",
+  avatarUrl: "/me.webp",
   skills: [
     "React",
     "Next.js",
@@ -31,7 +31,7 @@ export const DATA = {
     { href: "/blog", icon: NotebookIcon, label: "Blog" },
   ],
   contact: {
-    email: "umuteroltr097@gmail.com",
+    email: "umut@celixion.com",
     tel: "-",
     social: {
       GitHub: {
@@ -110,44 +110,75 @@ export const DATA = {
     
   ],
   projects: [
-    
+    {
+      title: "Locus",
+      slug: "locus",
+      href: "/projects/locus",
+      dates: "July 2026 - Active",
+      active: true,
+      description:
+        "A customer map and risk-analysis tool for Peritas Pet Food, a pet food distributor in the Aegean region. It merges five fragmented Panorama ERP exports into a single map of 1,426 customers, scoring each for delivery risk and payment risk so the field team can prioritise without rebuilding pivot tables in Excel.",
+      technologies: [
+        "Next.js",
+        "Mapbox GL JS",
+        "Supabase",
+        "PostgreSQL",
+        "Python",
+        "n8n",
+        "Vercel",
+      ],
+      links: [
+        {
+          type: "Website",
+          href: "https://locus-two-delta.vercel.app",
+          icon: <Icons.globe className="size-3" />,
+        },
+      ],
+      image: "/locus-mark.png",
+      imageFit: "cover",
+      video: "",
+    },
     {
       title: "Celixion",
-      href: "app.celixion.com",
+      slug: "celixion",
+      href: "https://celixion.com",
       dates: "September 2025 - Active",
       active: true,
       description:
-        "Celixion is a system that turns messy maritime brokerage emails into structured, queryable data. I build the parsing pipelines and AI-supported classification prompts, maintain the Supabase backend, and develop the internal dashboards brokers use to see ships, cargos, and match suggestions in real time. The aim is replacing manual brokerage routines with an automated matching system.",
+        "An operations hub for maritime and dry cargo brokers. The moment a quote email lands, Celixion parses it, files the vessel or cargo, and surfaces the best match — replacing the inbox-and-Excel routine with live fleet tracking, market signals, and automated matching. In daily use by broker teams: 23,000+ emails processed into 2,450 vessels and 5,339 cargo offers, at 92% auto-match accuracy.",
       technologies: [
         "Next.js",
         "Typescript",
         "PostgreSQL + Supabase",
         "Prisma",
+        "Mapbox",
+        "Recharts",
         "TailwindCSS",
         "Shadcn UI",
         "Magic UI",
-        "JavaScript",
         "n8n",
         "Python",
-        "Cloudflare Workers"
+        "Cloudflare Workers",
       ],
       links: [
         {
           type: "Website",
-          href: "app.celixion.com",
+          href: "https://celixion.com",
           icon: <Icons.globe className="size-3" />,
         },
       ],
-      image: "",
-      video: "/celixion-rec.mov",
+      image: "/blog/building-celixion-v2.png",
+      imageFit: "cover",
+      video: "",
     },
     {
       title: "Landing Page Designs",
-      href: "#",
+      slug: "",
+      href: "https://github.com/Umut-pixel/aygit-themes-2",
       dates: "April 2024 - active",
       active: true,
       description:
-        "Developed an landing page design for various customers and companies in Aygit as Freelancer.",
+        "Landing page design and development for a range of customers and companies, built as a freelancer with Aygıt Software. Delivered as reusable Next.js themes — component-driven, responsive layouts that can be restyled per client rather than rebuilt from scratch.",
       technologies: [
         "Next.js",
         "Typescript",
@@ -164,8 +195,8 @@ export const DATA = {
         },
       ],
       image: "",
-      video:
-        "/rota-landing.mp4",
+      imageFit: "cover",
+      video: "/rota-landing.mp4",
     },
   ],
   hackathons: [
